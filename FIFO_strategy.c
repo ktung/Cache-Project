@@ -1,9 +1,10 @@
 /*!
- * \file LRU_strategy.c
+ * \file FIFO_strategy.c
  *
- * \brief  Stratégie de remplacement avec LRU..
+ * \brief  Stratégie de remplacement avec FIFO..
  * 
- * \author Jean-Paul Rigault 
+ * \author Lucas Soumille 
+ * \author Pascal Tung 
  *
  * $Id: RAND_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
  */
@@ -12,8 +13,6 @@
 
 #include "strategy.h"
 #include "low_cache.h"
-#include "random.h"
-#include "time.h"
 #include "cache_list.h"
 
 /*!
