@@ -34,6 +34,7 @@
 typedef enum  {
     VALID = 0x1, //!< le bloc est valide
     MODIF = 0x2, //!< le bloc a été modifié
+    REFER = 0x3, //!< le bloc est référencé
 } Cache_Flag;
 
 //! Entête de chaque bloc.

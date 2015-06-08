@@ -9,8 +9,6 @@
  * $Id: RAND_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
  */
 
-#include <assert.h>
-
 #include "strategy.h"
 #include "low_cache.h"
 #include "cache_list.h"

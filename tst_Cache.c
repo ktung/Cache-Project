@@ -196,7 +196,6 @@ int main(int argc, char *argv[])
 */
 static void Test_1()
 {
-    printf("DO TEST 11\n");
     int ind;    /* indice-fichier de l'enregistrement à écrire */ 
     struct Any temp = {0, 0.0};
 
@@ -212,7 +211,6 @@ static void Test_1()
     }
 
     Print_Instrument(The_Cache, "Test_1 : boucle de lecture séquentielle");
-    printf("DO TEST 12\n");
 }
 
 /* Test 2 : boucle d'écriture aléatoire
