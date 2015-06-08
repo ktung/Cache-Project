@@ -1,0 +1,36 @@
+================ Configuration du cache ================
+Paramètres du fichier :
+	30000 enregistrements 480000 octets totaux
+Paramètres du cache :
+	30 blocs 10 enregistrements/bloc 16 octets/enregistrement
+	160 octets/bloc 4800 octets totaux
+	Rapport cache/fichier : 1.00 %
+	Stratégie : NUR
+Paramètres des tests :
+	Nombre d'accès : 90000
+	Rapport lectures/écritures : 10
+	Nombre maximum accès séquentiels : 5
+	Nombre de Working Sets : 100
+	Largeur de la fenêtre de localité : 300
+	Fréquence de déréférençage pour NUR : 100
+========================================================
+
+Test_1 : boucle de lecture séquentielle : 
+	29999 lectures 30000 écritures 56999 succès (95.0 %)
+	60 syncs 600 déréférençages
+
+Test_2 : boucle écriture aléatoire : 
+	0 lectures 90000 écritures 863 succès (1.0 %)
+	91 syncs 901 déréférençages
+
+Test_3 : boucle lecture/écriture aléatoire : 
+	81002 lectures 9001 écritures 49042 succès (54.5 %)
+	92 syncs 901 déréférençages
+
+Test_4 : boucle lecture/écriture aléatoire avec localité : 
+	80986 lectures 9014 écritures 85078 succès (94.5 %)
+	91 syncs 901 déréférençages
+
+Test_5 : boucle lecture/écriture séquentielle avec localité : 
+	81000 lectures 9000 écritures 85111 succès (94.6 %)
+	91 syncs 901 déréférençages

@@ -1,0 +1,2 @@
+RAND_strategy.o: RAND_strategy.c strategy.h low_cache.h cache.h random.h
+tst_Cache.o: tst_Cache.c cache.h strategy.h random.h
