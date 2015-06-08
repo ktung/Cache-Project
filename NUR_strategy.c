@@ -1,11 +1,11 @@
 /*!
- * \file LRU_strategy.c
+ * \file NUR_strategy.c
  *
- * \brief  Stratégie de remplacement avec LRU..
+ * \brief  Stratégie de remplacement avec NUR..
  * 
- * \author Jean-Paul Rigault
+ * \author Jean-Paul Rigault 
  *
- * $Id: LRU_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
+ * $Id: NUR_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
  */
 
 #include <assert.h>
@@ -17,7 +17,7 @@
 #include "cache_list.h"
 
 /*!
- * LRU 
+ * NUR : pas grand chose à faire ici. 
  *
  * En fait, nous initialisons le germe
  * (seed) du générateur aléatoire à quelque chose d'éminemment variable, pour
@@ -30,21 +30,21 @@ void *Strategy_Create(struct Cache *pcache)
 }
 
 /*!
- * LRU : Rien à faire ici.
+ * NUR
  */
 void Strategy_Close(struct Cache *pcache)
 {
 }
 
 /*!
- * LRU : Rien à faire ici.
+ * NUR : Rien à faire ici.
  */
 void Strategy_Invalidate(struct Cache *pcache)
 {
 }
 
 /*! 
- * LRU : On prend le premier bloc invalide. S'il n'y en a plus, on prend un bloc au hasard.
+ * NUR
  */
 struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache) 
 {
@@ -61,14 +61,14 @@ struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache)
 
 
 /*!
- * LRU : Rien à faire ici.
+ * NUR
  */
 void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh) 
 {
 }  
 
 /*!
- * LRU : Rien à faire ici.
+ * NUR
  */  
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
@@ -76,5 +76,5 @@ void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 
 char *Strategy_Name()
 {
-    return "LRU";
+    return "NUR";
 }
