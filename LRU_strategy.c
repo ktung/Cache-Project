@@ -25,8 +25,7 @@
  */
 void *Strategy_Create(struct Cache *pcache) 
 {
-    // srand((unsigned int)time(NULL));
-    return NULL;
+    return Cache_List_Create();
 }
 
 /*!
@@ -34,6 +33,7 @@ void *Strategy_Create(struct Cache *pcache)
  */
 void Strategy_Close(struct Cache *pcache)
 {
+	Cache_List_Delete(pcache->pstrategy);
 }
 
 /*!
@@ -41,6 +41,7 @@ void Strategy_Close(struct Cache *pcache)
  */
 void Strategy_Invalidate(struct Cache *pcache)
 {
+    Cache_List_Clear((struct Cache_List*) pcache->pstrategy);
 }
 
 /*! 
@@ -48,15 +49,16 @@ void Strategy_Invalidate(struct Cache *pcache)
  */
 struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache) 
 {
-    int ib;
+    struct Cache_List *tmpList = (struct Cache_List*)pcache->pstrategy;
     struct Cache_Block_Header *pbh;
-
     /* On cherche d'abord un bloc invalide */
-    if ((pbh = Get_Free_Block(pcache)) != NULL) return pbh;
-
-    /* Sinon on tire un numéro de bloc au hasard */
-    ib = RANDOM(0, pcache->nblocks);
-    return &pcache->headers[ib];
+    if ((pbh = Get_Free_Block(pcache)) != NULL){
+        Cache_List_Append(tmpList, pbh);
+        return pbh;
+    }
+    struct Cache_Block_Header *header = Cache_List_Remove_First(tmpList);
+    Cache_List_Append(tmpList, header);
+    return header;
 }
 
 
@@ -65,6 +67,9 @@ struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache)
  */
 void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh) 
 {
+	struct Cache_List *tmpList = (struct Cache_List*)pcache->pstrategy;
+	struct Cache_Block_Header *header = Cache_List_Remove(tmpList, pbh);
+	Cache_List_Append(tmpList, header);
 }  
 
 /*!
@@ -72,6 +77,9 @@ void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh)
  */  
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
+	struct Cache_List *tmpList = (struct Cache_List*)pcache->pstrategy;
+	struct Cache_Block_Header *header = Cache_List_Remove(tmpList, pbh);
+	Cache_List_Append(tmpList, header);
 } 
 
 char *Strategy_Name()
