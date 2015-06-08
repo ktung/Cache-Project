@@ -17,58 +17,56 @@
 #include "cache_list.h"
 
 /*!
- * RAND : pas grand chose à faire ici. 
- *
- * En fait, nous initialisons le germe
- * (seed) du générateur aléatoire à quelque chose d'éminemment variable, pour
- * éviter d'avoir la même séquence à chque exécution...
+ * FIFO : Creation de la Cache_List 
  */
 void *Strategy_Create(struct Cache *pcache) 
 {
-    // srand((unsigned int)time(NULL));
-    return NULL;
+    return Cache_List_Create();
 }
 
 /*!
- * RAND : Rien à faire ici.
+ * FIFO : Suppression de la Cache List 
  */
 void Strategy_Close(struct Cache *pcache)
 {
+    Cache_List_Delete(pcache->pstrategy);
 }
 
 /*!
- * RAND : Rien à faire ici.
+ * FIFO : Vide la Cache List.
  */
 void Strategy_Invalidate(struct Cache *pcache)
 {
+    Cache_List_Clear((struct Cache_List*) pcache->pstrategy);
 }
 
 /*! 
- * RAND : On prend le premier bloc invalide. S'il n'y en a plus, on prend un bloc au hasard.
+ * FIFO : Retourne un block free disponible ou supprime le 1er de la Cache_List.
  */
 struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache) 
 {
-    int ib;
     struct Cache_Block_Header *pbh;
-
+    struct Cache_List *tmpList = (struct Cache_List*)pcache->pstrategy;
     /* On cherche d'abord un bloc invalide */
-    if ((pbh = Get_Free_Block(pcache)) != NULL) return pbh;
-
-    /* Sinon on tire un numéro de bloc au hasard */
-    ib = RANDOM(0, pcache->nblocks);
-    return &pcache->headers[ib];
+    if ((pbh = Get_Free_Block(pcache)) != NULL){
+        Cache_List_Append(tmpList, pbh);
+        return pbh;
+    }
+    struct Cache_Block_Header *header = Cache_List_Remove_First(tmpList);
+    Cache_List_Append(tmpList, header);
+    return header;
 }
 
 
 /*!
- * RAND : Rien à faire ici.
+ * FIFO : Stratégie seulement sur la date de création.
  */
 void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh) 
 {
 }  
 
 /*!
- * RAND : Rien à faire ici.
+ * FIFO : Stratégie seulement sur la date de création.
  */  
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
@@ -76,5 +74,5 @@ void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 
 char *Strategy_Name()
 {
-    return "RAND";
+    return "FIFO";
 }

@@ -164,7 +164,6 @@ int main(int argc, char *argv[])
                                   Record_Size, N_Deref)) == NULL)
 	Error("Cache_Init");
     Print_Parameters();
-
     /* Exécution des tests */
     for (i = 0; i < NTESTS; ++i)
     {
@@ -197,7 +196,8 @@ int main(int argc, char *argv[])
 */
 static void Test_1()
 {
-    int ind;	/* indice-fichier de l'enregistrement à écrire */ 
+    printf("DO TEST 11\n");
+    int ind;    /* indice-fichier de l'enregistrement à écrire */ 
     struct Any temp = {0, 0.0};
 
     if (!Cache_Invalidate(The_Cache)) Error("Test_1 : Cache_Invalidate");
@@ -207,11 +207,12 @@ static void Test_1()
     {
         temp.i = ind;
         temp.x = (double)ind;
-	if (!Cache_Write(The_Cache, ind, &temp)) Error("Test_1 : Cache_Write");
-	if (!Cache_Read(The_Cache, ind - 1, &temp)) Error("Test_1 : Cache_Read");
+    if (!Cache_Write(The_Cache, ind, &temp)) Error("Test_1 : Cache_Write");
+    if (!Cache_Read(The_Cache, ind - 1, &temp)) Error("Test_1 : Cache_Read");
     }
 
     Print_Instrument(The_Cache, "Test_1 : boucle de lecture séquentielle");
+    printf("DO TEST 12\n");
 }
 
 /* Test 2 : boucle d'écriture aléatoire
