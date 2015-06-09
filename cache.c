@@ -11,6 +11,7 @@ struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
 	Cache_Block_Header *libre = pcache->pfree;
 	pcache->pfree->flags++;
+	pcache->pfree = *(pcache->pfree)+1;
 	
 	return libre;
 }
