@@ -16,7 +16,7 @@ struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
     struct Cache_Block_Header *libre = pcache->pfree;
     pcache->pfree->flags |= VALID;
-    // On parcours tous les autres block restante pour trouver un bloc 'free'
+    // On parcourt les blocs restants pour trouver un bloc 'free'
     for(int i = 0; i < pcache->nblocks; i++) {
         if((pcache->headers[i].flags & VALID)==0) {
             pcache->pfree = &pcache->headers[i];
