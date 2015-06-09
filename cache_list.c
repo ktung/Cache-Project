@@ -14,9 +14,24 @@ struct Cache_List *Cache_List_Create()
 	cache_list->pheader = NULL;
 	cache_list->next = NULL;
 	cache_list->prev = NULL;
+	
+	return *cache_list;
 }
 /*! Destruction d'une liste de blocs */
-void Cache_List_Delete(struct Cache_List *list);
+void Cache_List_Delete(struct Cache_List *list)
+{
+	Cache_List *current = list;
+	Cache_List *temp;
+	
+	if (current->next == NULL && current != NULL)
+		free(current);
+	while (current->next != NULL)
+	{
+		current = temp;
+		current = temp->next;
+		free(temp);
+	}
+}
 
 /*! Insertion d'un élément à la fin */
 void Cache_List_Append(struct Cache_List *list, struct Cache_Block_Header *pbh);
