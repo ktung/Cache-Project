@@ -1,12 +1,12 @@
 /*!
  * \file FIFO_strategy.c
  *
- * \brief  Stratégie de remplacement avec FIFO..
+ * \brief  Stratégie de remplacement avec FIFO.
  * 
  * \author Lucas Soumille
  * \author Pascal Tung
  *
- * $Id: RAND_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
+ * $Id: FIFO_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
  */
 
 #include "strategy.h"

@@ -1,7 +1,7 @@
 /*!
  * \file NUR_strategy.c
  *
- * \brief  Stratégie de remplacement avec NUR..
+ * \brief  Stratégie de remplacement avec NUR.
  * 
  * \author Lucas Soumille
  * \author Pascal Tung
@@ -13,6 +13,9 @@
 #include "low_cache.h"
 #include "cache_list.h"
 
+/*!
+ * Initialise le compteur et met le flag REFER à 0 pour tous les blocs du cache
+ */
 void Initialize_Flag_R(struct Cache *pcache)
 {
     // Si la limite > 0
@@ -31,6 +34,9 @@ void Initialize_Flag_R(struct Cache *pcache)
     }
 }
 
+/*!
+ * Calcul la valeur RM (RM = 2*R+M) du bloc en paramètre
+ */
 int evaluate_RM(struct Cache_Block_Header *bloc)
 {
     int rm = 0;
@@ -64,7 +70,7 @@ void Strategy_Invalidate(struct Cache *pcache)
 }
 
 /*! 
- * NUR
+ * NUR : Retourne le premier bloc free ou celui qui a le plus petit RM
  */
 struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache) 
 {
@@ -96,9 +102,8 @@ struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache)
     return bloc_NUR;
 }
 
-
 /*!
- * NUR
+ * NUR : Met le flag REFER à 1
  */
 void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh) 
 {
@@ -111,7 +116,7 @@ void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh)
 }  
 
 /*!
- * NUR
+ * NUR : Met le flag REFER à 1
  */  
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
