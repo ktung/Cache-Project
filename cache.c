@@ -11,21 +11,20 @@
 #include "cache.h"
 #include "strategy.h"
 
-
-//! Retourne le premier bloc libre ou NULL si le cache est plein
+ //! Retourne le premier bloc libre ou NULL si le cache est plein
 struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
-	Cache_Block_Header *libre = pcache->pfree;
-	pcache->pfree->flags |= VALID;
-	// On parcours tous les autres block restante pour trouver un bloc 'free'
-	for(int i = 0; i < pcache->nblocks; i++) {
-		if((pcache->headers[i]->flags & VALID)==0) {
-			pcache->pfree = pcache->headers[i];
-			break;
-		}
-	}
-	
-	return libre;
+    struct Cache_Block_Header *libre = pcache->pfree;
+    pcache->pfree->flags |= VALID;
+    // On parcours tous les autres block restante pour trouver un bloc 'free'
+    for(int i = 0; i < pcache->nblocks; i++) {
+        if((pcache->headers[i].flags & VALID)==0) {
+            pcache->pfree = &pcache->headers[i];
+            break;
+        }
+    }
+    
+    return libre;
 }
 
 //! Création du cache.
