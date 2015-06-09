@@ -12,8 +12,6 @@
 #include "strategy.h"
 
 
->>>>>>> Stashed changes
-
 //! Retourne le premier bloc libre ou NULL si le cache est plein
 struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
