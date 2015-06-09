@@ -3,7 +3,8 @@
  *
  * \brief  Stratégie de remplacement avec NUR..
  * 
- * \author Jean-Paul Rigault 
+ * \author Lucas Soumille
+ * \author Pascal Tung
  *
  * $Id: NUR_strategy.c,v 1.3 2008/03/04 16:52:49 jpr Exp $
  */
@@ -19,7 +20,8 @@ void Initialize_Flag_R(struct Cache *pcache)
     {
         // On met le flag REFER à 0 à tous les blocs
         for (int i = 0; i < pcache->nblocks; ++i)
-            pcache->headers[i].flags &= REFER;
+            pcache->headers[i].flags &= ~REFER;
+
 
         // Ré initilitialise le compteur
         pcache->pstrategy = 0;
