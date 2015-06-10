@@ -39,7 +39,6 @@ void checkSynchronisation(struct Cache *pcache){
 struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
                            size_t recordsz, unsigned nderef){
     //creation de la struct
-    printf("creation deb");
     struct Cache * cache = malloc(sizeof(struct Cache));
     cache->file = fic;
     cache->fp = fopen(fic, "wb+");
@@ -70,8 +69,7 @@ Cache_Error Cache_Close(struct Cache *pcache){
     //synchronise cache / fichier
     if(Cache_Sync(pcache) == CACHE_KO) return CACHE_KO;
     //close le fichier
-    if(fclose(pcache->fp) != 0)
-        return CACHE_KO;
+    if(fclose(pcache->fp) != 0) return CACHE_KO;
     //desalloue
     Strategy_Close(pcache);
     //on free les datas
@@ -118,8 +116,10 @@ Cache_Error Cache_Invalidate(struct Cache *pcache){
 struct Cache_Block_Header * getBlockByIbfile(struct Cache *pcache, int irfile){
     int ibSearch = irfile / pcache->nrecords; // Indice du bloc contenant l'enregistrement
     for(int i = 0 ; i < pcache->nblocks ; ++i){
-        if(pcache->headers[i].ibfile == ibSearch)
-            return &pcache->headers[i]; // Bloc ayant possiblement l'enregistrement
+        if(pcache->headers[i].flags & VALID){
+            if(pcache->headers[i].ibfile == ibSearch)
+                return &(pcache->headers[i]);
+        }
     }
     return NULL;
 }
@@ -128,7 +128,7 @@ struct Cache_Block_Header * getBlockByIbfile(struct Cache *pcache, int irfile){
 Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
     struct Cache_Block_Header * header = getBlockByIbfile(pcache, irfile);
     //si le block n'est pas dans le cache
-    if(header == NULL || (header->flags &= VALID) == 0){
+    if(header == NULL){
         header = Strategy_Replace_Block(pcache);
         header->ibfile = irfile / pcache->nrecords;
         if(fseek(pcache->fp, DADDR(pcache, header->ibfile), SEEK_SET) != 0) return CACHE_KO;
@@ -153,7 +153,7 @@ Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
 Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
     struct Cache_Block_Header * header = getBlockByIbfile(pcache, irfile);
     //si le block n'est pas dans le cache
-    if(header == NULL || (header->flags &= VALID) == 0){
+    if(header == NULL){
         header = Strategy_Replace_Block(pcache);
         pcache->pfree = Get_Free_Block(pcache);
         header->ibfile = irfile / pcache->nrecords;
@@ -182,6 +182,8 @@ Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
 struct Cache_Instrument *Cache_Get_Instrument(struct Cache *pcache)
 {
     struct Cache_Instrument stat = pcache->instrument;
+    printf("Read : %d\n Write : %d\n Hits : %d\n", pcache->instrument.n_reads,
+          pcache->instrument.n_writes, pcache->instrument.n_hits);
     pcache->instrument.n_reads   = 0;
     pcache->instrument.n_writes  = 0;
     pcache->instrument.n_hits    = 0;

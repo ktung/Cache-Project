@@ -133,10 +133,10 @@ static void Test_5();
 
 static void (*Tests[])() = {
     Test_1,
-    Test_2,
-    Test_3,
-    Test_4,
-    Test_5,
+    Test_2//,
+    //Test_3,
+    //Test_4,
+    //Test_5,
 };
 #define NTESTS ((int)(sizeof(Tests)/sizeof(Tests[0])))
 
