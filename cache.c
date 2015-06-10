@@ -41,7 +41,7 @@ struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
     //creation de la struct
     struct Cache * cache = malloc(sizeof(struct Cache));
     cache->file = fic;
-    cache->fp = fopen(fic, "r+");
+    cache->fp = fopen(fic, "rb+");
     cache->nblocks = nblocks;
     cache->nderef = nderef;
     cache->blocksz = recordsz * nrecords;
@@ -52,7 +52,15 @@ struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
     Cache_Get_Instrument(cache);
     struct Cache_Block_Header * headers = malloc(sizeof(struct Cache_Block_Header) * nblocks);
     cache->headers = headers;
+    //initialisation des headers
+    for(int i = 0 ; i < nblocks ; ++i){
+		cache->headers[i].ibcache = i;
+		cache->headers[i].flags = 0;
+		cache->headers[i].data = malloc(nrecords * recordsz);
+    }
+    //initialisation du premier block free
     cache->pfree = Get_Free_Block(cache);
+
     cptSynchro = 0;
 
     return cache;
@@ -66,6 +74,12 @@ Cache_Error Cache_Close(struct Cache *pcache){
     if(fclose(pcache->fp) == CACHE_KO) return CACHE_KO;
     //desalloue 
     Strategy_Close(pcache);
+
+    //on free les datas
+    for(int i = 0 ; i < pcache->nblocks ; ++i){
+    	free(pcache->headers[i].data);
+    }
+
     free(&pcache->instrument);
     free(pcache->headers);
     free(pcache);
@@ -74,12 +88,14 @@ Cache_Error Cache_Close(struct Cache *pcache){
 
 //! Synchronisation du cache.
 Cache_Error Cache_Sync(struct Cache *pcache){
-    //+1 au cpt de synchronisation
+	//reinit cpt de synchronisation
+	cptSynchro = 0;
+    //+1 au nombre de synchronisation
     pcache->instrument.n_syncs++;
     for(int i = 0 ; i < pcache->nblocks ; i++){
         //on regarde si il a été modifié
         if((pcache->headers[i].flags & MODIF) > 0){
-            if(fseek(pcache->fp, i * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
+            if(fseek(pcache->fp, pcache->headers[i].ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
             if(fputs(pcache->headers[i].data, pcache->fp) == EOF) return CACHE_KO;
             //on remet le bit a modification a 0
             pcache->headers[i].flags &= ~MODIF;
@@ -94,34 +110,39 @@ Cache_Error Cache_Invalidate(struct Cache *pcache){
     for(int i = 0 ; i < pcache->nblocks ; i++)
         pcache->headers[i].flags &= ~VALID;
 
+    pcache->pfree = Get_Free_Block(pcache);
+
     Strategy_Invalidate(pcache);
     return CACHE_OK;
 }
 
 struct Cache_Block_Header * getBlockByIbfile(struct Cache *pcache, int irfile){
-    struct Cache_Block_Header * header;
+    int ibSearch = irfile / pcache->nrecords; // Indice du bloc contenant l'enregistrement
     for(int i = 0 ; i < pcache->nblocks ; ++i){
-        header = &pcache->headers[i];
-        printf("IBFILE %d\n", header->ibfile);
-        if(header->ibfile == irfile){
-            return &header[i];
-        }
+    	if(pcache->headers[i].ibfile == ibSearch)
+    		return &pcache->headers[i]; // Bloc ayant possiblement l'enregistrement
     }
     return NULL;
 }
 
 //! Lecture  (à travers le cache).
 Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
-    struct Cache_Block_Header * header;
-    if((header = getBlockByIbfile(pcache, irfile)) == NULL){//si le block n'est pas dans le cache
+    struct Cache_Block_Header * header = getBlockByIbfile(pcache, irfile);
+    //si le block n'est pas dans le cache
+    if(header == NULL || (header->flags &= VALID) == 0){
         header = Strategy_Replace_Block(pcache);
-        if(fseek(pcache->fp, header->ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
-        if(fputs((char *)pcache->fp, (FILE *)header->data) == EOF) return CACHE_KO; 
-        //+1 au nombre d'enregistrement dans le cache
-        pcache->instrument.n_hits++;
+        header->ibfile = irfile / pcache->nrecords;
+        if(fseek(pcache->fp, DADDR(pcache, header->ibfile), SEEK_SET) != 0) return CACHE_KO;
+        if(fgets(header->data, pcache->blocksz, pcache->fp) == EOF) return CACHE_KO; 
+        //MAJ des flags
+        header->flags |= VALID; //n'est plus free
+		header->flags &= ~MODIF; //mets le flag de modification
+    } else {
+    	//l'élément est dans le cache
+    	pcache->instrument.n_hits++;
     }
     //on copie dans le buffer
-    if(fputs(header->data, (FILE *)precord) == EOF) return CACHE_KO;
+    if(fgets((char *)precord, pcache->recordsz, ADDR(pcache, irfile, header))== EOF) return CACHE_KO;
     //+1 au nombre de lecture
     pcache->instrument.n_reads++;
     checkSynchronisation(pcache);
@@ -132,17 +153,26 @@ Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
 //! Écriture (à travers le cache).
 Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
 	struct Cache_Block_Header * header = getBlockByIbfile(pcache, irfile);
-	if(header->flags & VALID == 0){//si le block n'est pas valide on change
+	//si le block n'est pas dans le cache
+	if(header == NULL || (header->flags &= VALID) == 0){
 		header = Strategy_Replace_Block(pcache);
-		if(fseek(pcache->fp, header->ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
-		if(fputs((char *)pcache->fp, (FILE*)header->data) == EOF) return CACHE_KO;	
-		//+1 au nombre d'enregistrement dans le cache
+        header->ibfile = irfile / pcache->nrecords;
+        if(fseek(pcache->fp, DADDR(pcache, header->ibfile), SEEK_SET) != 0) return CACHE_KO;
+        if(fgets(header->data, pcache->blocksz, pcache->fp) == EOF) return CACHE_KO; 
+        //MAJ des flags
+        header->flags |= VALID; //n'est plus free
+		header->flags &= ~MODIF; //mets le flag de modification
+	} else {
+		//l'élement est dans le cache
 		pcache->instrument.n_hits++;
-		header->flags |= MODIF;
 	}
-	if(fputs((char *)precord, (FILE *)header->data) == EOF) return CACHE_KO;
+	//on copie dans le bloc
+    if(fgets(ADDR(pcache, irfile, header), pcache->recordsz, precord)== EOF) return CACHE_KO;
+    
+	header->flags &= ~MODIF;
 	//+1 au nombre d'écriture
 	pcache->instrument.n_reads++;
+	Cache_Sync(pcache);
 	checkSynchronisation(pcache);
 	Strategy_Write(pcache, header);
 	return CACHE_OK;

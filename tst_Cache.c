@@ -195,10 +195,9 @@ int main(int argc, char *argv[])
  * excellente, toutes les stratégies doivent être efficaces.
 */
 static void Test_1()
-{
+{   
     int ind;    /* indice-fichier de l'enregistrement à écrire */ 
     struct Any temp = {0, 0.0};
-
     if (!Cache_Invalidate(The_Cache)) Error("Test_1 : Cache_Invalidate");
 
     if (!Cache_Write(The_Cache, 0, &temp)) Error("Test_1 : Cache_Write(0)");
