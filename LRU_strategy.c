@@ -60,7 +60,7 @@ struct Cache_Block_Header *Strategy_Replace_Block(struct Cache *pcache)
  */
 void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh) 
 {
-        printf("READ %d\n", pbh);
+        // printf("READ %d\n", pbh);
 
     Cache_List_Move_To_End((struct Cache_List*)pcache->pstrategy, pbh);
 }  
@@ -70,7 +70,7 @@ void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh)
  */  
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
-    printf("WRITE %d\n", pbh);
+    // printf("WRITE %d\n", pbh);
     Cache_List_Move_To_End((struct Cache_List*)pcache->pstrategy, pbh);
 } 
 
