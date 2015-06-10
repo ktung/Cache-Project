@@ -129,8 +129,8 @@ Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
 
 //! Écriture (à travers le cache).
 Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
-	struct Cache_Block_Header * header;
-	if((header = getBlockByIbfile(pcache, irfile)) == NULL){//si le block n'est pas dans le cache
+	struct Cache_Block_Header * header = getBlockByIbfile(pcache, irfile);
+	if(header->flags & VALID == 0){//si le block n'est pas valide on change
 		header = Strategy_Replace_Block(pcache);
 		if(fseek(pcache->fp, header->ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
 		if(fputs((char *)pcache->fp, (FILE*)header->data) == EOF) return CACHE_KO;	
