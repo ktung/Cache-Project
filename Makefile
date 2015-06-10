@@ -20,7 +20,7 @@ PROGS = tst_Cache_RAND tst_Cache_FIFO tst_Cache_LRU tst_Cache_NUR
 # Mettre ici les *.o de la bibliothèque que vous avez réimplémentés
 # (cache.o low_cache.o cache_list.o)
 
-USRFILES = cache_list.o
+USRFILES = cache_list.o cache.o
 
 #------------------------------------------------------------------
 # Commandes
@@ -40,7 +40,7 @@ DOXYGEN = doxygen
 
 # Exécutables avec diverses stratégies
 tst_Cache_% : tst_Cache.o %_strategy.o $(USRFILES)	
-	$(CC) -o $@ $^ libCache.a
+	$(CC) -o $@ $^ #libCache.a
 
 # Exécution des simulations (make simul) avec paramètres par défaut
 %_default.out : tst_Cache_%
