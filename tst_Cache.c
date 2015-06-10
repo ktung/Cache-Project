@@ -206,6 +206,7 @@ static void Test_1()
     {
         temp.i = ind;
         temp.x = (double)ind;
+        // printf("temp %d i %d x %d\n", &temp, temp.i, temp.x);
     if (!Cache_Write(The_Cache, ind, &temp)) Error("Test_1 : Cache_Write");
     if (!Cache_Read(The_Cache, ind - 1, &temp)) Error("Test_1 : Cache_Read");
     }

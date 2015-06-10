@@ -20,7 +20,7 @@ PROGS = tst_Cache_RAND tst_Cache_FIFO tst_Cache_LRU tst_Cache_NUR
 # Mettre ici les *.o de la bibliothèque que vous avez réimplémentés
 # (cache.o low_cache.o cache_list.o)
 
-USRFILES = cache_list.o
+USRFILES = cache_list.o cache.o
 
 #------------------------------------------------------------------
 # Commandes
