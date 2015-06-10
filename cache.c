@@ -11,6 +11,8 @@
 #include "cache.h"
 #include "strategy.h"
 
+int cptSynchro;
+
  //! Retourne le premier bloc libre ou NULL si le cache est plein
 struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
@@ -27,6 +29,11 @@ struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 	return libre;
 }
 
+void checkSynchronisation(struct Cache *pcache){
+	if(++cptSynchro == NSYNC)
+		Cache_Sync(pcache);
+}
+
 //! Création du cache.
 struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
                            size_t recordsz, unsigned nderef){
@@ -40,11 +47,12 @@ struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
 	cache->nrecords = nrecords;
 	cache->recordsz = recordsz;
 	cache->pstrategy = Strategy_Create(cache);
-	struct Cache_Instrument *instr = malloc(sizeof(struct Cache_Instrument));
-	cache->instrument = *instr;
+	//cache->instrument = (struct Cache_Instrument *)malloc(sizeof(struct Cache_Instrument));
+	Cache_Get_Instrument(cache);
 	struct Cache_Block_Header * headers = malloc(sizeof(struct Cache_Block_Header) * nblocks);
 	cache->headers = headers;
 	cache->pfree = Get_Free_Block(cache);
+	cptSynchro = 0;
 
 	return cache;
 }
@@ -65,6 +73,8 @@ Cache_Error Cache_Close(struct Cache *pcache){
 
 //! Synchronisation du cache.
 Cache_Error Cache_Sync(struct Cache *pcache){
+	//+1 au cpt de synchronisation
+	pcache->instrument.n_syncs++;
 	for(int i = 0 ; i < pcache->nblocks ; i++){
 		//on regarde si il a été modifié
 		if((pcache->headers[i].flags & MODIF) > 0){
@@ -105,8 +115,14 @@ Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
 		header = Strategy_Replace_Block(pcache);
 		if(fseek(pcache->fp, header->ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
 		if(fputs((char *)pcache->fp, (FILE *)header->data) == EOF) return CACHE_KO;	
+		//+1 au nombre d'enregistrement dans le cache
+		pcache->instrument.n_hits++;
 	}
+	//on copie dans le buffer
 	if(fputs(header->data, (FILE *)precord) == EOF) return CACHE_KO;
+	//+1 au nombre de lecture
+	pcache->instrument.n_reads++;
+	checkSynchronisation(pcache);
 	Strategy_Read(pcache, header);
 	return CACHE_OK;
 }
@@ -118,13 +134,25 @@ Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
 		header = Strategy_Replace_Block(pcache);
 		if(fseek(pcache->fp, header->ibfile * pcache->blocksz, SEEK_SET) != 0) return CACHE_KO;
 		if(fputs((char *)pcache->fp, (FILE*)header->data) == EOF) return CACHE_KO;	
+		//+1 au nombre d'enregistrement dans le cache
+		pcache->instrument.n_hits++;
+		header->flags |= MODIF;
 	}
 	if(fputs((char *)precord, (FILE *)header->data) == EOF) return CACHE_KO;
+	//+1 au nombre d'écriture
+	pcache->instrument.n_reads++;
+	checkSynchronisation(pcache);
 	Strategy_Write(pcache, header);
 	return CACHE_OK;
 }
 
 struct Cache_Instrument *Cache_Get_Instrument(struct Cache *pcache)
 {
-	return &pcache->instrument;
+	struct Cache_Instrument stat = pcache->instrument;
+	pcache->instrument.n_reads = 0;
+	pcache->instrument.n_writes = 0;
+	pcache->instrument.n_hits = 0;
+	pcache->instrument.n_syncs = 0;
+	pcache->instrument.n_deref = 0;
+	return &stat;
 }
