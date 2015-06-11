@@ -133,10 +133,10 @@ static void Test_5();
 
 static void (*Tests[])() = {
     Test_1,
-    Test_2//,
-    //Test_3,
-    //Test_4,
-    //Test_5,
+    Test_2,
+    Test_3,
+    Test_4,
+    Test_5,
 };
 #define NTESTS ((int)(sizeof(Tests)/sizeof(Tests[0])))
 
@@ -481,7 +481,8 @@ static void Print_Parameters()
 static void Print_Instrument(struct Cache *pcache, const char *msg)
 {
     struct Cache_Instrument *pinstr = Cache_Get_Instrument(pcache);
-
+    int nbSyncs = pinstr->n_syncs;
+    int nbDeref = pinstr->n_deref;
     if (Short_Output)
     {
         printf("hits %.1f\n", 
@@ -493,7 +494,7 @@ static void Print_Instrument(struct Cache *pcache, const char *msg)
         printf("\t%d lectures %d écritures %d succès (%.1f %%)\n",
                pinstr->n_reads, pinstr->n_writes, pinstr->n_hits, 
                ((double)pinstr->n_hits)/(pinstr->n_reads + pinstr->n_writes)*100);
-        printf("\t%d syncs %d déréférençages\n", pinstr->n_syncs, pinstr->n_deref);
+        printf("\t%d syncs %d déréférençages\n", nbSyncs, nbDeref);
     }
 }
 

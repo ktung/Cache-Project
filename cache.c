@@ -59,7 +59,7 @@ struct Cache *Cache_Create(const char *fic, unsigned nblocks, unsigned nrecords,
         cache->headers[i].data = malloc(nrecords * recordsz);
     }
     //initialisation du premier block free
-    cache->pfree = Get_Free_Block(cache);
+    cache->pfree = &cache->headers[0];
     cptSynchro = 0;
     return cache;
 }
@@ -86,8 +86,6 @@ Cache_Error Cache_Close(struct Cache *pcache){
 Cache_Error Cache_Sync(struct Cache *pcache){
     //reinit cpt de synchronisation
     cptSynchro = 0;
-    //+1 au nombre de synchronisation
-    pcache->instrument.n_syncs++;
     for(int i = 0 ; i < pcache->nblocks ; i++){
         //on regarde si il a été modifié
         if((pcache->headers[i].flags & MODIF) > 0){
@@ -97,6 +95,8 @@ Cache_Error Cache_Sync(struct Cache *pcache){
             pcache->headers[i].flags &= ~MODIF;
         } 
     }
+    //+1 au nombre de synchronisation
+    pcache->instrument.n_syncs++;
     return CACHE_OK;
 }
 
@@ -116,10 +116,10 @@ Cache_Error Cache_Invalidate(struct Cache *pcache){
 struct Cache_Block_Header * getBlockByIbfile(struct Cache *pcache, int irfile){
     int ibSearch = irfile / pcache->nrecords; // Indice du bloc contenant l'enregistrement
     for(int i = 0 ; i < pcache->nblocks ; ++i){
-        if(pcache->headers[i].flags & VALID){
+        //if(pcache->headers[i].flags & VALID){
             if(pcache->headers[i].ibfile == ibSearch)
                 return &(pcache->headers[i]);
-        }
+        //}
     }
     return NULL;
 }
@@ -135,7 +135,7 @@ Cache_Error Cache_Read(struct Cache *pcache, int irfile, void *precord){
         if(fgets(header->data, pcache->blocksz, pcache->fp) == EOF) return CACHE_KO; 
         //MAJ des flags
         header->flags |= VALID; //n'est plus free
-        header->flags &= ~MODIF; //mets le flag de modification
+        header->flags &= ~MODIF; //enleve le flag de modification
     } else {
         //l'élément est dans le cache
         pcache->instrument.n_hits++;
@@ -155,13 +155,12 @@ Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
     //si le block n'est pas dans le cache
     if(header == NULL){
         header = Strategy_Replace_Block(pcache);
-        pcache->pfree = Get_Free_Block(pcache);
         header->ibfile = irfile / pcache->nrecords;
         if(fseek(pcache->fp, DADDR(pcache, header->ibfile), SEEK_SET) != 0) return CACHE_KO;
         if(fgets(header->data, pcache->blocksz, pcache->fp) == EOF) return CACHE_KO; 
         //MAJ des flags
         header->flags |= VALID; //n'est plus free
-        header->flags &= ~MODIF; //mets le flag de modification
+        header->flags &= ~MODIF; //enleve le flag de modification
     } else {
         //l'élement est dans le cache
         pcache->instrument.n_hits++;
@@ -173,7 +172,7 @@ Cache_Error Cache_Write(struct Cache *pcache, int irfile, const void *precord){
     header->flags |= MODIF;
     //+1 au nombre d'écriture
     pcache->instrument.n_writes++;
-    Cache_Sync(pcache);
+    //Cache_Sync(pcache);
     checkSynchronisation(pcache);
     Strategy_Write(pcache, header);
     return CACHE_OK;
