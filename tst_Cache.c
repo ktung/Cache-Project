@@ -481,6 +481,7 @@ static void Print_Parameters()
 static void Print_Instrument(struct Cache *pcache, const char *msg)
 {
     struct Cache_Instrument *pinstr = Cache_Get_Instrument(pcache);
+    printf("%d\n", pinstr->n_syncs);
     int nbSyncs = pinstr->n_syncs;
     int nbDeref = pinstr->n_deref;
     if (Short_Output)

@@ -117,12 +117,15 @@ Cache_Error Cache_Sync(struct Cache *pcache){
 
 //! Invalidation du cache.
 Cache_Error Cache_Invalidate(struct Cache *pcache){
+    printf("Invalide deb\n");
+    Cache_Sync(pcache);
+    printf("Invalide mil\n");
     for(int i = 0 ; i < pcache->nblocks ; i++)
         pcache->headers[i].flags &= ~VALID;
     //reinit le block free
     pcache->pfree = &pcache->headers[0];
     //reinit les stats
-    Cache_Get_Instrument(pcache);
+    //Cache_Get_Instrument(pcache);
     //applique a la strategie
     Strategy_Invalidate(pcache);
 
