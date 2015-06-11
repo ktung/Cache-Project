@@ -16,16 +16,16 @@ int cptSynchro;
  //! Retourne le premier bloc libre ou NULL si le cache est plein
 struct Cache_Block_Header *Get_Free_Block(struct Cache *pcache)
 {
-    struct Cache_Block_Header *libre = pcache->pfree;
+    struct Cache_Block_Header *libre = NULL;
     // On parcours tous les autres block restante pour trouver un bloc 'free'
     for(int i = 0; i < pcache->nblocks; i++) {
         if((pcache->headers[i].flags & VALID)==0) {
             libre = &pcache->headers[i];
+            libre->flags |=VALID;
+            libre->flags &= ~MODIF;
             break;
         }
     }
-
-    libre->flags |= VALID;
     
     return libre;
 }
