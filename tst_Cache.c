@@ -163,9 +163,7 @@ int main(int argc, char *argv[])
     if ((The_Cache = Cache_Create(File, N_Blocks_in_Cache, N_Records_per_Block,
                                   Record_Size, N_Deref)) == NULL)
 	Error("Cache_Init");
-    printf("%d\n", The_Cache);
     Print_Parameters();
-    fprintf(stderr,"param after");
     /* Exécution des tests */
     for (i = 0; i < NTESTS; ++i)
     {
@@ -198,17 +196,14 @@ int main(int argc, char *argv[])
 */
 static void Test_1()
 {
-    printf("Test 1 deb");
     int ind;    /* indice-fichier de l'enregistrement à écrire */ 
     struct Any temp = {0, 0.0};
     if (!Cache_Invalidate(The_Cache)) Error("Test_1 : Cache_Invalidate");
-    printf("Test_1 invalider");
     if (!Cache_Write(The_Cache, 0, &temp)) Error("Test_1 : Cache_Write(0)");
     for (ind = 1; ind < N_Records_in_File; ind++)
     {
         temp.i = ind;
         temp.x = (double)ind;
-        // printf("temp %d i %d x %d\n", &temp, temp.i, temp.x);
     if (!Cache_Write(The_Cache, ind, &temp)) Error("Test_1 : Cache_Write");
     if (!Cache_Read(The_Cache, ind - 1, &temp)) Error("Test_1 : Cache_Read");
     }
@@ -481,7 +476,6 @@ static void Print_Parameters()
 static void Print_Instrument(struct Cache *pcache, const char *msg)
 {
     struct Cache_Instrument *pinstr = Cache_Get_Instrument(pcache);
-    printf("%d\n", pinstr->n_syncs);
     int nbSyncs = pinstr->n_syncs;
     int nbDeref = pinstr->n_deref;
     if (Short_Output)

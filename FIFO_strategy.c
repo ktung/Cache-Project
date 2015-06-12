@@ -34,9 +34,7 @@ void Strategy_Close(struct Cache *pcache)
  */
 void Strategy_Invalidate(struct Cache *pcache)
 {   
-    printf("invalide deb %d", pcache->pstrategy);
     Cache_List_Clear((struct Cache_List*) pcache->pstrategy);
-    printf("invalide fin %d", pcache);
 }
 
 /*! 

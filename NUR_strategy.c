@@ -121,7 +121,7 @@ void Strategy_Read(struct Cache *pcache, struct Cache_Block_Header *pbh)
 void Strategy_Write(struct Cache *pcache, struct Cache_Block_Header *pbh)
 {
     // Si le compteur est >= à la limit, on ré initialize
-    if ((++pcache->pstrategy) >= pcache->nderef)
+    if (++pcache->pstrategy >= pcache->nderef)
         Initialize_Flag_R(pcache);
 
     // On met le flag REFER à 1
